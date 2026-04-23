@@ -1,24 +1,24 @@
 import Link from "next/link";
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <main className="pagina">
-      <div className="card-formulario">
-        <h1 className="titulo-formulario">barbearia.reis23</h1>
-        <p className="subtitulo-formulario">
+    <main className="pagina-home">
+      <div className="card-home">
+        <h1 className="titulo-home">Barbearia Reis23</h1>
+        <p className="subtitulo-home">
           Escolha como deseja entrar no sistema
         </p>
 
-        <div className="formulario">
-          <Link href="/login" className="botao-formulario" style={{ textAlign: "center" }}>
-            Login
+        <div className="botoes-home">
+          <Link href="/login" className="botao-home">
+            Login Cliente
           </Link>
 
-          <Link href="/cadastro" className="botao-formulario" style={{ textAlign: "center" }}>
+          <Link href="/cadastro" className="botao-home botao-home-secundario">
             Criar conta
           </Link>
 
-          <Link href="/login-barbeiro" className="botao-formulario" style={{ textAlign: "center" }}>
+          <Link href="/login-barbeiro" className="botao-home">
             Login Barbeiro
           </Link>
         </div>

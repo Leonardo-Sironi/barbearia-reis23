@@ -1,67 +1,64 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function LoginBarbeiroPage() {
-  const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
+export default function LoginBarbeiro() {
   const router = useRouter();
 
-  function handleLogin(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [erro, setErro] = useState("");
 
-    if (!email || !senha) {
-      alert("Preencha email e senha.");
-      return;
-    }
+  function handleLogin(e: React.FormEvent) {
+    e.preventDefault();
+    setErro("");
 
     if (email === "admin@barbearia.com" && senha === "123456") {
-      localStorage.setItem("tipoUsuario", "admin");
-      alert("Login do barbeiro realizado com sucesso!");
+      localStorage.setItem("tipoUsuario", "barbeiro");
+
       router.push("/barbeiro");
     } else {
-      alert("Email ou senha do barbeiro inválidos.");
+      setErro("E-mail ou senha incorretos.");
     }
   }
 
   return (
-    <main className="pagina">
-      <div className="card-formulario">
-        <h1 className="titulo-formulario">Login Barbeiro</h1>
+    <>
+      <Link href="/" className="botao-voltar">
+        ← Menu inicial
+      </Link>
 
-        <p className="subtitulo-formulario">
-          Acesso exclusivo do barbeiro
-        </p>
+      <main className="container">
+        <div className="card">
+          <h1>Login Barbeiro</h1>
 
-        <form onSubmit={handleLogin} className="formulario">
-          <div className="campo">
-            <label className="label">E-mail</label>
+          <form onSubmit={handleLogin} className="formulario">
             <input
               type="email"
-              placeholder="Digite o e-mail do barbeiro"
+              placeholder="E-mail"
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              className="input"
+              onChange={(e) => setEmail(e.target.value)}
             />
-          </div>
 
-          <div className="campo">
-            <label className="label">Senha</label>
             <input
               type="password"
-              placeholder="Digite a senha"
+              placeholder="Senha"
               value={senha}
-              onChange={(event) => setSenha(event.target.value)}
-              className="input"
+              onChange={(e) => setSenha(e.target.value)}
             />
-          </div>
 
-          <button type="submit" className="botao-formulario">
-            Entrar como barbeiro
-          </button>
-        </form>
-      </div>
-    </main>
+            <button type="submit">Entrar</button>
+          </form>
+
+          {erro && (
+            <p style={{ color: "red", textAlign: "center", marginTop: "10px" }}>
+              {erro}
+            </p>
+          )}
+        </div>
+      </main>
+    </>
   );
 }
