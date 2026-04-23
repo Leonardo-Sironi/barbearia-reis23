@@ -7,7 +7,9 @@ import { db } from "../../lib/firebase";
 import {
   collection,
   addDoc,
+  getDoc,
   getDocs,
+  doc,
   query,
   where,
 } from "firebase/firestore";
@@ -48,6 +50,11 @@ type AgendamentoTipo = {
   criadoEm: string;
 };
 
+type BloqueioDia = {
+  diaInteiro: boolean;
+  horarios: string[];
+};
+
 export default function Agendamento() {
   const router = useRouter();
 
@@ -59,35 +66,27 @@ export default function Agendamento() {
   const [horarioSelecionado, setHorarioSelecionado] = useState("");
 
   const [agendaDoDia, setAgendaDoDia] = useState<AgendamentoTipo[]>([]);
+  const [bloqueioDia, setBloqueioDia] = useState<BloqueioDia>({
+    diaInteiro: false,
+    horarios: [],
+  });
+
   const [carregandoAgenda, setCarregandoAgenda] = useState(false);
   const [salvando, setSalvando] = useState(false);
-
-  const [bloqueios, setBloqueios] = useState<{ [key: string]: string[] }>({});
-  const [diasBloqueados, setDiasBloqueados] = useState<string[]>([]);
 
   useEffect(() => {
     const tipo = localStorage.getItem("tipoUsuario");
 
     if (tipo !== "cliente") {
       router.push("/login");
-      return;
-    }
-
-    const salvoBloqueios = localStorage.getItem("bloqueiosHorarios");
-    if (salvoBloqueios) {
-      setBloqueios(JSON.parse(salvoBloqueios));
-    }
-
-    const salvoDiasBloqueados = localStorage.getItem("diasBloqueados");
-    if (salvoDiasBloqueados) {
-      setDiasBloqueados(JSON.parse(salvoDiasBloqueados));
     }
   }, [router]);
 
   useEffect(() => {
-    async function carregarAgendamentosDoDia() {
+    async function carregarDadosDoDia() {
       if (!dataSelecionada) {
         setAgendaDoDia([]);
+        setBloqueioDia({ diaInteiro: false, horarios: [] });
         return;
       }
 
@@ -101,21 +100,33 @@ export default function Agendamento() {
 
         const snapshot = await getDocs(q);
 
-        const lista: AgendamentoTipo[] = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...(doc.data() as AgendamentoTipo),
+        const lista: AgendamentoTipo[] = snapshot.docs.map((docSnap) => ({
+          id: docSnap.id,
+          ...(docSnap.data() as AgendamentoTipo),
         }));
 
         setAgendaDoDia(lista);
+
+        const bloqueioRef = doc(db, "bloqueios", dataSelecionada);
+        const bloqueioSnap = await getDoc(bloqueioRef);
+
+        if (bloqueioSnap.exists()) {
+          const dados = bloqueioSnap.data() as BloqueioDia;
+          setBloqueioDia({
+            diaInteiro: dados.diaInteiro || false,
+            horarios: dados.horarios || [],
+          });
+        } else {
+          setBloqueioDia({ diaInteiro: false, horarios: [] });
+        }
       } catch (error) {
-        console.log("Erro ao carregar agendamentos:", error);
-        setAgendaDoDia([]);
+        console.log("Erro ao carregar dados do dia:", error);
       } finally {
         setCarregandoAgenda(false);
       }
     }
 
-    carregarAgendamentosDoDia();
+    carregarDadosDoDia();
   }, [dataSelecionada]);
 
   function diasNoMes(mes: number) {
@@ -168,8 +179,8 @@ export default function Agendamento() {
     ? agendaDoDia.flatMap((a) => a.horariosBloqueados)
     : [];
 
-  const horariosBloqueadosDoDia = dataSelecionada ? bloqueios[dataSelecionada] || [] : [];
-  const diaInteiroBloqueado = dataSelecionada ? diasBloqueados.includes(dataSelecionada) : false;
+  const horariosBloqueadosDoDia = bloqueioDia.horarios || [];
+  const diaInteiroBloqueado = bloqueioDia.diaInteiro;
 
   async function agendar() {
     if (!dataSelecionada) {
@@ -200,12 +211,12 @@ export default function Agendamento() {
     }
 
     if (servicosSelecionados.length === 0) {
-      alert("Escolha pelo menos um serviço");
+      alert("Escolha pelo menos um serviço.");
       return;
     }
 
     if (!horarioSelecionado) {
-      alert("Escolha um horário");
+      alert("Escolha um horário.");
       return;
     }
 
@@ -221,6 +232,11 @@ export default function Agendamento() {
 
     const index = horarios.indexOf(horarioSelecionado);
     const horariosParaBloquear = horarios.slice(index, index + blocos);
+
+    if (horariosParaBloquear.length < blocos) {
+      alert("Esse horário não tem tempo suficiente para os serviços escolhidos.");
+      return;
+    }
 
     const conflitoAgenda = horariosParaBloquear.some((h) => ocupadosDoDia.includes(h));
     const conflitoBloqueio = horariosParaBloquear.some((h) => horariosBloqueadosDoDia.includes(h));
@@ -263,6 +279,12 @@ export default function Agendamento() {
     }
   }
 
+  function logout() {
+    localStorage.removeItem("clienteLogado");
+    localStorage.removeItem("tipoUsuario");
+    router.push("/");
+  }
+
   const totalDias = diasNoMes(mesAtual);
   const inicioSemana = primeiroDiaSemana(mesAtual);
 
@@ -274,11 +296,18 @@ export default function Agendamento() {
 
       <main className="pagina">
         <div className="card-formulario">
-          <h1 className="titulo-formulario">Agendamento</h1>
+          <div className="topo-painel">
+            <div>
+              <h1 className="titulo-formulario">Agendamento</h1>
+              <p className="subtitulo-formulario">
+                Escolha uma data, selecione os serviços e confirme seu horário.
+              </p>
+            </div>
 
-          <p className="subtitulo-formulario">
-            Escolha uma data disponível, selecione os serviços e confirme seu horário.
-          </p>
+            <button onClick={logout} className="botao-sair">
+              Sair
+            </button>
+          </div>
 
           <div className="campo">
             <label className="label">Escolha o dia</label>
@@ -291,7 +320,9 @@ export default function Agendamento() {
               >
                 ◀
               </button>
+
               <strong>{meses[mesAtual]} {anoAtual}</strong>
+
               <button
                 type="button"
                 className="botao-navegacao-mes"
@@ -321,7 +352,6 @@ export default function Agendamento() {
                 const dataFormatada = `${anoAtual}-${String(mesAtual + 1).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
                 const selecionado = dataSelecionada === dataFormatada;
                 const domingo = new Date(anoAtual, mesAtual, dia).getDay() === 0;
-                const diaBloqueado = diasBloqueados.includes(dataFormatada);
                 const passado = dataEhPassada(dataFormatada);
                 const foraLimite = dataPassaDoLimite(dataFormatada);
 
@@ -329,27 +359,19 @@ export default function Agendamento() {
                   <button
                     key={dataFormatada}
                     type="button"
-                    disabled={domingo || diaBloqueado || passado || foraLimite}
-                    onClick={() => {
-                      if (!domingo && !diaBloqueado && !passado && !foraLimite) {
-                        setDataSelecionada(dataFormatada);
-                      }
-                    }}
+                    disabled={domingo || passado || foraLimite}
+                    onClick={() => setDataSelecionada(dataFormatada)}
                     className="botao-formulario"
                     style={{
                       backgroundColor: selecionado
                         ? "#4caf50"
                         : domingo
                         ? "#ff6b6b"
-                        : diaBloqueado
-                        ? "#222"
                         : passado || foraLimite
                         ? "#777"
                         : "#cccccc",
-                      color: selecionado || domingo || diaBloqueado || passado || foraLimite ? "#fff" : "#111",
-                      padding: "10px",
-                      opacity: domingo || diaBloqueado || passado || foraLimite ? 0.6 : 1,
-                      cursor: domingo ? "not-allowed" : "pointer",
+                      color: selecionado || domingo || passado || foraLimite ? "#fff" : "#111",
+                      opacity: domingo || passado || foraLimite ? 0.6 : 1,
                     }}
                   >
                     {dia}
@@ -362,7 +384,7 @@ export default function Agendamento() {
           {dataSelecionada && (
             <>
               {diaInteiroBloqueado && (
-                <p style={{ color: "#ff6b6b", fontWeight: "bold" }}>
+                <p className="mensagem-erro">
                   Esse dia está bloqueado pelo barbeiro.
                 </p>
               )}
@@ -425,9 +447,9 @@ export default function Agendamento() {
                               }}
                             >
                               {ocupado
-                                ? `${h} (ocupado)`
+                                ? `${h} ocupado`
                                 : bloqueado
-                                ? `${h} (bloqueado)`
+                                ? `${h} bloqueado`
                                 : h}
                             </button>
                           );

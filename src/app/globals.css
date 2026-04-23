@@ -283,3 +283,137 @@ a {
   background: #222;
   border-radius: 8px;
 }
+.linha-senha {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.linha-senha input {
+  flex: 1;
+}
+
+.botao-reenviar {
+  margin-top: 12px;
+  width: 100%;
+  height: 44px;
+  border: none;
+  border-radius: 8px;
+  background: #333;
+  color: white;
+  cursor: pointer;
+}
+
+.botao-reenviar:hover {
+  background: #444;
+}
+
+.mensagem-sucesso {
+  color: #22c55e;
+  margin-top: 12px;
+  text-align: center;
+}
+
+.mensagem-erro {
+  color: #ef4444;
+  margin-top: 12px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.topo-painel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.botao-sair {
+  background: #333;
+  color: white;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.botao-sair:hover {
+  background: #444;
+}
+
+.painel-box {
+  background: #222;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 18px;
+}
+
+.input-data {
+  width: 100%;
+  max-width: 250px;
+  height: 42px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: none;
+  font-size: 16px;
+}
+
+.card-agendamento {
+  background: #181818;
+  border: 1px solid #333;
+  padding: 14px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+
+.botao-perigo {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.botao-perigo:hover {
+  background: #dc2626;
+}
+
+.botao-principal-painel {
+  background: #8b5cf6;
+  color: white;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.botao-principal-painel:hover {
+  background: #7c3aed;
+}
+
+@media (max-width: 600px) {
+  .topo-painel {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .botao-sair {
+    width: 100%;
+  }
+
+  .botao-voltar {
+    position: static;
+    display: inline-block;
+    margin: 12px;
+  }
+
+  .container {
+    padding-top: 10px;
+  }
+
+  .card {
+    margin-top: 10px;
+  }
+}

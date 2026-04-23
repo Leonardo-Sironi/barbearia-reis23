@@ -15,9 +15,8 @@ export default function LoginBarbeiro() {
     e.preventDefault();
     setErro("");
 
-    if (email === "admin@barbearia.com" && senha === "123456") {
+    if (email.trim() === "admin@barbearia.com" && senha === "123456") {
       localStorage.setItem("tipoUsuario", "barbeiro");
-
       router.push("/barbeiro");
     } else {
       setErro("E-mail ou senha incorretos.");
@@ -53,7 +52,7 @@ export default function LoginBarbeiro() {
           </form>
 
           {erro && (
-            <p style={{ color: "red", textAlign: "center", marginTop: "10px" }}>
+            <p style={{ color: "#ef4444", textAlign: "center", marginTop: "12px" }}>
               {erro}
             </p>
           )}

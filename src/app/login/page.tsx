@@ -35,24 +35,19 @@ export default function LoginPage() {
 
     try {
       setCarregando(true);
-      console.log("1 - iniciando login");
 
       const credencial = await signInWithEmailAndPassword(auth, emailLimpo, senha);
       const user = credencial.user;
-      console.log("2 - login auth ok", user.uid);
 
       if (!user.emailVerified) {
-        console.log("3 - email não verificado");
         await sendEmailVerification(user);
         await signOut(auth);
 
         setErro(
-          "Seu e-mail ainda não foi verificado. Enviamos novamente o link de confirmação. Verifique seu e-mail."
+          "Seu e-mail ainda não foi verificado. Enviamos novamente o link de confirmação. Verifique sua caixa de entrada, spam e promoções. Geralmente o e-mail de confirmação pode cair no spam."
         );
         return;
       }
-
-      console.log("3 - email verificado");
 
       let clienteLogado = {
         uid: user.uid,
@@ -62,17 +57,8 @@ export default function LoginPage() {
       };
 
       try {
-        console.log("4 - buscando firestore");
         const docRef = doc(db, "clientes", user.uid);
-
-        const resultado = await Promise.race([
-          getDoc(docRef),
-          new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("timeout-firestore")), 5000)
-          ),
-        ]);
-
-        const docSnap: any = resultado;
+        const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
           const dados = docSnap.data();
@@ -83,28 +69,16 @@ export default function LoginPage() {
             email: dados.email || user.email || emailLimpo,
             whatsapp: dados.whatsapp || "",
           };
-
-          console.log("5 - firestore ok", clienteLogado);
-        } else {
-          console.log("5 - documento do cliente não existe, entrando mesmo assim");
         }
-      } catch (erroFirestore) {
-        console.log("5 - erro firestore, entrando mesmo assim", erroFirestore);
+      } catch (error) {
+        console.log("Erro ao buscar cliente:", error);
       }
 
       localStorage.setItem("clienteLogado", JSON.stringify(clienteLogado));
       localStorage.setItem("tipoUsuario", "cliente");
-      console.log("6 - localStorage salvo");
-
-      setMensagem("Login realizado com sucesso!");
-      console.log("7 - redirecionando");
 
       router.push("/agendamento");
     } catch (error: any) {
-      console.log("ERRO LOGIN:", error);
-      console.log("CODE:", error?.code);
-      console.log("MESSAGE:", error?.message);
-
       if (error.code === "auth/invalid-credential") {
         setErro("E-mail ou senha incorretos.");
       } else if (error.code === "auth/invalid-email") {
@@ -112,7 +86,7 @@ export default function LoginPage() {
       } else if (error.code === "auth/too-many-requests") {
         setErro("Muitas tentativas. Aguarde um pouco e tente novamente.");
       } else {
-        setErro(`Erro ao fazer login: ${error?.code || error?.message || "desconhecido"}`);
+        setErro(`Erro ao fazer login: ${error?.code || "desconhecido"}`);
       }
     } finally {
       setCarregando(false);
@@ -173,14 +147,14 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
             />
 
-            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            <div className="linha-senha">
               <input
                 type={mostrarSenha ? "text" : "password"}
                 placeholder="Senha"
                 value={senha}
                 onChange={(e) => setSenha(e.target.value)}
-                style={{ flex: 1 }}
               />
+
               <button
                 type="button"
                 onClick={() => setMostrarSenha(!mostrarSenha)}
@@ -199,23 +173,13 @@ export default function LoginPage() {
             type="button"
             onClick={reenviarVerificacao}
             disabled={carregando}
-            className="botao-secundario"
-            style={{ width: "100%", marginTop: "12px" }}
+            className="botao-reenviar"
           >
             Reenviar verificação
           </button>
 
-          {mensagem && (
-            <p style={{ color: "#22c55e", marginTop: "12px", textAlign: "center" }}>
-              {mensagem}
-            </p>
-          )}
-
-          {erro && (
-            <p style={{ color: "#ef4444", marginTop: "12px", textAlign: "center" }}>
-              {erro}
-            </p>
-          )}
+          {mensagem && <p className="mensagem-sucesso">{mensagem}</p>}
+          {erro && <p className="mensagem-erro">{erro}</p>}
 
           <p style={{ marginTop: "16px", textAlign: "center" }}>
             Não tem conta? <a href="/cadastro">Criar conta</a>
