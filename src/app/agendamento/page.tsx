@@ -23,11 +23,10 @@ const servicosLista = [
 ];
 
 const horarios = [
-  "08:00", "08:30",
-  "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
-  "13:00", "13:30", "14:00", "14:30", "15:00", "15:30",
-  "16:00", "16:30", "17:00", "17:30", "18:00", "18:30",
-  "19:00", "19:30",
+  "08:00", "08:30", "09:00", "09:30", "10:00", "10:30",
+  "11:00", "11:30", "13:00", "13:30", "14:00", "14:30",
+  "15:00", "15:30", "16:00", "16:30", "17:00", "17:30",
+  "18:00", "18:30", "19:00", "19:30",
 ];
 
 const meses = [
@@ -154,6 +153,17 @@ export default function Agendamento() {
     return `${ano}-${mes}-${dia}`;
   }
 
+  function horarioJaPassou(data: string, horario: string) {
+    const agora = new Date();
+
+    const [ano, mes, dia] = data.split("-").map(Number);
+    const [hora, minuto] = horario.split(":").map(Number);
+
+    const dataHorario = new Date(ano, mes - 1, dia, hora, minuto);
+
+    return dataHorario <= agora;
+  }
+
   const hoje = useMemo(() => new Date(), []);
   const hojeString = formatarDataLocal(hoje);
 
@@ -217,6 +227,11 @@ export default function Agendamento() {
 
     if (!horarioSelecionado) {
       alert("Escolha um horário.");
+      return;
+    }
+
+    if (horarioJaPassou(dataSelecionada, horarioSelecionado)) {
+      alert("Esse horário já passou. Escolha outro horário.");
       return;
     }
 
@@ -304,9 +319,15 @@ export default function Agendamento() {
               </p>
             </div>
 
-            <button onClick={logout} className="botao-sair">
-              Sair
-            </button>
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+              <Link href="/meus-agendamentos" className="botao-link-roxo">
+                Meus agendamentos
+              </Link>
+
+              <button onClick={logout} className="botao-sair">
+                Sair
+              </button>
+            </div>
           </div>
 
           <div className="campo">
@@ -427,12 +448,13 @@ export default function Agendamento() {
                           const ocupado = ocupadosDoDia.includes(h);
                           const bloqueado = horariosBloqueadosDoDia.includes(h);
                           const selecionado = horarioSelecionado === h;
+                          const passou = dataSelecionada ? horarioJaPassou(dataSelecionada, h) : false;
 
                           return (
                             <button
                               key={h}
                               type="button"
-                              disabled={ocupado || bloqueado}
+                              disabled={ocupado || bloqueado || passou}
                               onClick={() => setHorarioSelecionado(h)}
                               className="botao-formulario"
                               style={{
@@ -440,16 +462,21 @@ export default function Agendamento() {
                                   ? "#555"
                                   : bloqueado
                                   ? "#222"
+                                  : passou
+                                  ? "#777"
                                   : selecionado
                                   ? "#4caf50"
                                   : "#cccccc",
-                                color: ocupado || bloqueado || selecionado ? "#fff" : "#111",
+                                color: ocupado || bloqueado || passou || selecionado ? "#fff" : "#111",
+                                opacity: passou ? 0.6 : 1,
                               }}
                             >
                               {ocupado
                                 ? `${h} ocupado`
                                 : bloqueado
                                 ? `${h} bloqueado`
+                                : passou
+                                ? `${h} passou`
                                 : h}
                             </button>
                           );

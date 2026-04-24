@@ -417,3 +417,18 @@ a {
     margin-top: 10px;
   }
 }
+.botao-link-roxo {
+  display: inline-block;
+  background: #8b5cf6;
+  color: white;
+  padding: 10px 14px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.botao-link-roxo:hover {
+  background: #7c3aed;
+}
