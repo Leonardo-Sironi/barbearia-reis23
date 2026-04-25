@@ -15,7 +15,7 @@ export default function LoginBarbeiro() {
     e.preventDefault();
     setErro("");
 
-    if (email === "admin@barbearia.com" && senha === "Gussbarberreis777") {
+    if (email === "admin@barbearia.com" && senha === "teste12345") {
       localStorage.setItem("tipoUsuario", "barbeiro");
       router.push("/barbeiro");
     } else {

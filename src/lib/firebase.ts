@@ -5,12 +5,12 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBrK3IleTNXnooZ8RfQMJoX6glbR6vFs1A",
-  authDomain: "barbearia-reis23.firebaseapp.com",
-  projectId: "barbearia-reis23",
-  storageBucket: "barbearia-reis23.firebasestorage.app",
-  messagingSenderId: "827420854274",
-  appId: "1:827420854274:web:e6205dbf434a2a74bc3f1b",
+  apiKey: "AIzaSyC9f1utkYzM-LIbd7Sa6UdwoMY7P436UE4",
+  authDomain: "barbearia-demo-771b2.firebaseapp.com",
+  projectId: "barbearia-demo-771b2",
+  storageBucket: "barbearia-demo-771b2.firebasestorage.app",
+  messagingSenderId: "618749823855",
+  appId: "1:618749823855:web:162b14a16b77e6f9ccf69a",
 };
 
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
