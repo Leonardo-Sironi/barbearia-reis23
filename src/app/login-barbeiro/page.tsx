@@ -15,15 +15,13 @@ export default function LoginBarbeiro() {
     e.preventDefault();
     setErro("");
 
-    if (
-  email.trim() === "admin@barbearia.com" &&
-  senha.trim() === "Gussbarberreis777"
-) {
-  localStorage.setItem("tipoUsuario", "barbeiro");
-  router.push("/barbeiro");
-} else {
-  setErro("E-mail ou senha incorretos.");
-}}
+    if (email === "admin@barbearia.com" && senha === "Gussbarberreis777") {
+      localStorage.setItem("tipoUsuario", "barbeiro");
+      router.push("/barbeiro");
+    } else {
+      setErro("E-mail ou senha incorretos.");
+    }
+  }
 
   return (
     <>
